@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/smsPreference"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp">
+        <TextView
+            android:id="@+id/smsBanner"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:gravity="center"
+            android:textSize="25sp"
+            android:textColor="@color/forest_green"
+            android:layout_marginLeft="10dp"
+            android:text="@string/smsBanner"/>
+        <TextView
+            android:id="@+id/smsMessage"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="left"
+            android:textSize="20sp"
+            android:layout_marginLeft="10dp"
+            android:text="@string/smsMessage"/>
+        <RadioGroup
+            android:id="@+id/smsPermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="vertical">
+            <RadioButton
+                android:id="@+id/enableSMS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/enableSMS"/>
+            <RadioButton
+                android:id="@+id/disableSMS"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/doNotAllowSMS"/>
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/smsWarning"
+            android:visibility="invisible"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_margin="10dp"
+            android:textColor="@color/delete_red"
+            android:gravity="left"
+            android:textSize="20sp"
+            android:layout_marginLeft="10dp"
+            android:text="@string/smsWarningMessage"/>
+
+        <Button
+            android:id="@+id/submitSMSChoice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/submitSMSPreference"
+            android:textSize="20sp"/>
+    </TableLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/weightTracking"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="60dp">
+        <TableRow>
+            <TextView
+                android:id="@+id/todayWeightPrompt"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginLeft="10dp"
+                android:text="@string/todayWeight"/>
+            <EditText
+                android:id="@+id/todayWeightField"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:width="80dp"
+                android:inputType="numberDecimal"/>
+            <TextView
+                android:id="@+id/poundLabel"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:textSize="15sp"
+                android:layout_marginLeft="10dp"
+                android:text="@string/lbs"/>
+            <Button
+                android:id="@+id/enterWeightButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:text="@string/enterWeight"
+                android:textSize="15sp"/>
+        </TableRow>
+
+        <TextView
+            android:id="@+id/poundsToGoDiscription"
+            android:enabled="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textColor="@color/forest_green"/>
+
+        <com.jjoe64.graphview.GraphView
+            android:id="@+id/idGraphView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_alignParentTop="true" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp">
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                    <TableRow
+                        android:gravity="center">
+                        <TextView
+                            android:id="@+id/weightDateLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_margin="15dp"
+                            android:gravity="center"
+                            android:textSize="20sp"
+                            android:textColor="@color/forest_green"
+                            android:width="80dp"
+                            android:text="@string/dateHeader"/>
+                        <TextView
+                            android:id="@+id/weightAmountLabel"
+                            android:enabled="true"
+                            android:layout_width="wrap_content"
+                            android:layout_margin="15dp"
+                            android:gravity="center"
+                            android:textSize="20sp"
+                            android:textColor="@color/forest_green"
+                            android:width="80dp"
+                            android:text="@string/weightHeader"/>
+                        <TextView
+                            android:id="@+id/removeLabel"
+                            android:enabled="true"
+                            android:layout_width="wrap_content"
+                            android:layout_margin="15dp"
+                            android:gravity="center"
+                            android:textSize="20sp"
+                            android:textColor="@color/forest_green"
+                            android:width="80dp"
+                            android:text="@string/removeHeader"/>
+                    </TableRow>
+                <LinearLayout
+                    android:id="@+id/weighInCardContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"/>
+
+            </TableLayout>
+
+        </ScrollView>
+    </TableLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

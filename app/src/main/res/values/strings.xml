@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Weight Tracker</string>
+    <string name="userNamePrompt">User Name:</string>
+    <string name="userPasswordPrompt">Password:</string>
+    <string name="confirmUserPasswordPrompt">Confirm Password:</string>
+    <string name="createAccount">Create Account</string>
+    <string name="logIn">Log In</string>
+    <string name="createNewAccount">Create New Account</string>
+    <string name="goalWeightPrompt">Goal Weight:</string>
+    <string name="todayWeight">Today\'s Weight:</string>
+    <string name="lbs">Pounds</string>
+    <string name="enterWeight">Enter Weight</string>
+    <string name="poundsToGo"> lbs to go to your goal of </string>
+    <string name="dateHeader">Date</string>
+    <string name="weightHeader">Weight</string>
+    <string name="changeHeader">Change</string>
+    <string name="DemoDate">08/01/26</string>
+    <string name="DemoWeight">185.2 lbs</string>
+    <string name="delete">Delete Weight</string>
+    <string name="removeHeader">Delete</string>
+    <string name="smsBanner">SMS Notifications</string>
+    <string name="smsMessage">Would you like to receive a text message notifying you when you reach your goal weight?</string>
+    <string name="enableSMS">Enable SMS messaging</string>
+    <string name="doNotAllowSMS">Disable SMS messaging</string>
+    <string name="smsWarningMessage">Disabling SMS means that you will not be notified when you reach your goal.</string>
+    <string name="submitSMSPreference">Submit SMS Preference</string>
+    <string name="pounds"> lbs</string>
+</resources>
