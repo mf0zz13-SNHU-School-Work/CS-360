@@ -1,175 +1,146 @@
-# Weight Tracker
+# Weight Tracker — Android and SQLite
 
-Weight Tracker is a local-first Android application for recording daily weigh-ins, monitoring progress toward a goal weight, and reviewing changes over time. The project was developed in Java for SNHU's CS 360: Mobile Architecture and Programming course.
+Weight Tracker is an academic Android application for recording daily weigh-ins, comparing progress with a goal, and viewing a chronological trend. It was developed in Java for SNHU's CS 360: Mobile Architecture and Programming course.
 
-## Project Requirements at a Glance
+> **Prototype safety notice:** Do not use this build for real credentials or health data. Passwords are currently stored as plaintext, phone numbers are initialized as empty strings with no collection workflow, and a database-version upgrade drops and recreates all tables.
 
-| Requirement | Implementation |
+## Implemented scope
+
+| Area | Current behavior |
 | --- | --- |
-| User accounts | Create a local account and log in with saved credentials |
-| Goal tracking | Set a goal weight during registration and view the remaining pounds on the dashboard |
-| Daily weigh-ins | Add today's weight or update the existing entry for the current date |
-| Weight history | Display saved entries by date and allow individual entries to be deleted |
-| Progress visualization | Plot recorded weights chronologically in a line graph |
-| SMS option | Save an opt-in preference, request Android's SMS permission only when needed, and evaluate goal completion after a weigh-in |
-| Local persistence | Store account, goal, preference, and weigh-in data in a relational SQLite database |
+| Local accounts | Create an account and validate a username/password against SQLite |
+| Goal tracking | Save a goal weight and calculate distance from the latest entry |
+| Daily weigh-ins | Add a dated record or update the current day's entry |
+| History | Display user-specific entries and delete individual records |
+| Visualization | Plot stored weights chronologically with GraphView |
+| SMS workflow | Save an opt-in preference, request Android's `SEND_SMS` permission, and attempt a message when a goal is reached |
+| Persistence | Store users, goals, preferences, and weight records in three related SQLite tables |
 
-## Overview
+The SMS preference and permission flow is present, but end-to-end notification behavior is not ready: account creation stores an empty phone number and the UI provides no way to enter one. The repository therefore does not demonstrate a validated working SMS notification feature.
 
-The app addresses a simple user need: keeping a private, easy-to-read record of weight progress without requiring a cloud account or a feature-heavy fitness platform. After creating an account, a user can enter one weigh-in per day, revise that day's value, review or delete previous entries, and see progress in both a goal summary and a graph.
+## User flow
 
-The interface keeps the main taskâ€”recording today's weightâ€”at the top of the tracking screen. Supporting information is progressively disclosed through a compact progress message, a visual trend line, and a scrollable history. Clear input types, familiar controls, consistent green-and-white styling, and immediate feedback help users understand what to do on each screen.
+1. Create a local account with a goal weight, or sign in to an existing account.
+2. Choose whether to enable the SMS preference.
+3. Add or update today's weight.
+4. Review the goal summary, line graph, and dated history.
+5. Delete an individual history entry when needed.
 
-## Key Features
+The interface uses masked password input, numeric weight fields, inline warnings, and toast feedback. It refreshes the goal message, graph, and history after a data change so the three views remain aligned.
 
-- Local account creation and credential validation
-- Goal-weight capture during registration
-- Daily weight create, read, update, and delete operations
-- Automatic add-or-update behavior for the current day's weigh-in
-- User-specific, scrollable weight history
-- Chronologically sorted weight-progress graph
-- Goal-distance calculation based on the latest daily entry
-- Optional SMS preference with runtime permission handling
-- Inline warnings and toast feedback for invalid or incomplete actions
-- Custom Back behavior between the registration and login views
+## Technical design
 
-## User Experience
-
-| Screen | Purpose | User-centered design choices |
-| --- | --- | --- |
-| Login and registration | Authenticates an existing user or creates a new account and goal | Uses a familiar form pattern, password input masking, numeric goal input, clear primary actions, and predictable Back navigation |
-| SMS preference | Lets a new user opt in to or decline goal notifications | Explains the feature before requesting permission, displays a warning when SMS is disabled, and asks for Android permission only after opt-in |
-| Weight dashboard | Supports daily entry, goal monitoring, graphing, history review, updates, and deletion | Places the daily action first, combines visual and numeric progress, keeps history scrollable, and refreshes all displayed data after a change |
-
-## Technical Design
-
-The project uses a small MVC-inspired separation of concerns. XML resources define the views, `Controller` handles screen transitions and user events, `Model` prepares data for display, and `WeightTrackingDatabase` owns SQLite schema creation and CRUD operations.
+The code uses a small MVC-inspired separation. XML resources define the screens, `Controller` coordinates navigation and events, `Model` prepares application data, and `WeightTrackingDatabase` owns schema creation and CRUD operations.
 
 ```mermaid
 flowchart TD
     V["XML layouts"] --> C["Controller"]
     C --> M["Model"]
-    C --> D["SQLite helper"]
+    C --> D["SQLiteOpenHelper"]
     M --> D
     M --> G["GraphView"]
     C --> S["Android SMS API"]
 ```
 
-### Technology Stack
+### Stack
 
-| Area | Technology |
+| Area | Committed configuration |
 | --- | --- |
-| Platform | Android 7.0+ (minimum API 24) |
-| Language | Java 11 |
-| UI | Android XML layouts, AppCompat, ConstraintLayout, and standard Android widgets |
+| Platform | Android; minimum API 24, compile/target API 37 |
+| Language | Java source and target compatibility 11 |
+| UI | Android XML, AppCompat, Material components, ConstraintLayout |
 | Persistence | SQLite through `SQLiteOpenHelper` |
 | Visualization | GraphView 4.2.2 |
-| Build system | Gradle 9.5 with Android Gradle Plugin 9.3.1 |
-| Testing libraries | JUnit 4 and AndroidX Test/Espresso |
+| Build | Gradle Wrapper 9.5.0 and Android Gradle Plugin 9.3.1 |
+| Build JVM criteria | JDK 25 in `gradle/gradle-daemon-jvm.properties` |
+| Test dependencies | JUnit 4.13.2 and AndroidX JUnit/Espresso |
 
-### Data Model
+Java 11 is the app's source/bytecode target; it is not the runtime configured to execute this Gradle build. The committed daemon criteria request JDK 25. This pairing is consistent with the official compatibility tables: AGP 9.3 requires Gradle 9.5.0, and Gradle supports running on Java 25 beginning with Gradle 9.1. See the [Android Gradle plugin compatibility table](https://developer.android.com/build/releases/about-agp) and [Gradle Java compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html).
 
-The local database contains three related tables:
+### Data model
 
-- `user` stores the username, local credential, SMS preference, and phone-number field.
-- `dailyWeight` stores a user's dated weigh-ins and uses a foreign key back to `user`.
-- `goalWeight` stores one goal per user and also uses a foreign key back to `user`.
+- `user` stores a username, plaintext password, SMS preference, and phone-number field.
+- `dailyWeight` stores dated weigh-ins associated with a username.
+- `goalWeight` stores a user's goal.
 
-Parameterized queries are used when reading records, and database operations are kept inside the SQLite helper rather than spread throughout the UI code.
+Database access is centralized in the helper, and read queries use selection arguments. The current schema is suitable for studying local CRUD behavior, not for protecting sensitive data.
 
-### Main Components
+### Main components
 
 | Path | Responsibility |
 | --- | --- |
-| `app/src/main/java/.../Controller.java` | Activity lifecycle, navigation, input handling, runtime SMS permission, and goal checks |
-| `app/src/main/java/.../Model.java` | Account coordination, dynamic history rows, goal display, and graph preparation |
-| `app/src/main/java/.../WeightTrackingDatabase.java` | Database schema and user, goal, preference, and weigh-in CRUD operations |
-| `app/src/main/res/layout/activity_login.xml` | Login and account-creation interface |
-| `app/src/main/res/layout/activity_sms_notification.xml` | SMS preference interface |
-| `app/src/main/res/layout/activity_weight_tracking.xml` | Daily entry, progress graph, and weight-history interface |
+| [`Controller.java`](app/src/main/java/com/zybooks/michael_foster_weight_tracker/Controller.java) | Activity lifecycle, navigation, input handling, SMS permission, and goal checks |
+| [`Model.java`](app/src/main/java/com/zybooks/michael_foster_weight_tracker/Model.java) | Account coordination, history rows, goal display, and graph preparation |
+| [`WeightTrackingDatabase.java`](app/src/main/java/com/zybooks/michael_foster_weight_tracker/WeightTrackingDatabase.java) | Schema creation and account, goal, preference, and weigh-in CRUD operations |
+| [layout resources](app/src/main/res/layout) | Login/registration, SMS preference, and tracking screens |
 
-## Getting Started
+## Build and run
 
 ### Prerequisites
 
-- A current version of Android Studio
-- JDK 11 or a compatible Android Studio-managed JDK
-- Android SDK 37 for compilation
-- An emulator or Android device running Android 7.0 (API 24) or newer
+- Android Studio compatible with Android Gradle Plugin 9.3
+- JDK 25 available for the committed Gradle daemon criteria
+- Android SDK 37
+- An emulator or device running Android 7.0 (API 24) or newer
 
-### Run the App
+Open the repository root in Android Studio, allow Gradle synchronization to complete, select an emulator/device, and run the `app` configuration. A command-line debug build can be requested with:
 
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/mf0zz13-SNHU-School-Work/CS-360.git
-   ```
-
-2. Open the cloned `CS-360` directory in Android Studio.
-3. Allow Gradle to synchronize and download the GraphView dependency.
-4. Select an emulator or connected Android device.
-5. Run the `app` configuration.
-
-The project can also be built from the command line:
-
-```bash
-bash gradlew assembleDebug
+```powershell
+.\gradlew.bat assembleDebug
 ```
 
-On Windows, use `gradlew.bat assembleDebug`.
-
-## Testing
-
-Development testing was performed incrementally in the Android emulator after each feature was connected. The main end-to-end checks covered account creation, valid and invalid login attempts, local persistence, first-time and same-day weight entry, history deletion, progress recalculation, graph refresh, and both outcomes of the SMS permission request.
-
-Testing each feature in the context of the full workflow was important because many defects appeared at the boundaries between the interface, controller logic, and databaseâ€”not within a single method. It revealed the need to refresh the history, goal message, and graph together after a database change; sort date-based data before graphing it; validate numeric input; and preserve the user's chosen notification state through Android's asynchronous permission callback.
-
-The repository currently includes basic JUnit and Android instrumentation test scaffolding. These checks can be run with:
+On macOS or Linux:
 
 ```bash
-bash gradlew test
-bash gradlew connectedAndroidTest
+./gradlew assembleDebug
 ```
 
-Expanding the automated suite to cover database CRUD behavior, model calculations, and Espresso UI flows is a planned improvement.
+These commands are derived from the committed build files. A fresh build was not executed during the documentation-only portfolio refresh, so current build success is not claimed here.
 
-## Current Scope and Future Improvements
+## Testing status
 
-This repository is an academic prototype rather than a production health application. The next improvements would be to:
+The repository contains the default example JUnit and Android instrumentation test scaffolding. It does **not** yet contain automated business tests for authentication, calculations, SQLite CRUD, migrations, permissions, or the main UI workflow.
 
-- Hash and securely store credentials instead of treating the local database as a production authentication system.
-- Add a validated phone-number field before attempting to send a goal-completion SMS.
-- Add comprehensive unit, database, and Espresso UI tests.
-- Improve accessibility, responsive layout behavior, and input validation.
-- Migrate to modern Android architecture components such as Room, ViewModel, and the Navigation component.
-- Support editing goal weight and notification preferences after registration.
+Candidate commands after a successful Gradle synchronization are:
 
-## Development Reflection
+```powershell
+.\gradlew.bat test
+.\gradlew.bat connectedAndroidTest
+```
 
-### Requirements and User Needs
+`connectedAndroidTest` requires a configured emulator or connected device. The presence of test dependencies and example files should not be interpreted as comprehensive coverage.
 
-The goal was to create a functional Android weight tracker with local account creation and login, persistent daily weight records, a goal weight, editable history, a progress graph, and an optional SMS notification path. The app was designed for users who want a straightforward way to record their weight, understand whether they are moving toward a goal, and review progress without navigating a complicated fitness application.
+## Known limitations and readiness work
 
-### Screens, Features, and User-Centered UI
+Before this project should be featured as a polished mobile sample:
 
-The app required a login and account-creation experience, an SMS preference screen, and a weight-tracking dashboard. I kept users in mind by relying on familiar form controls, limiting each screen to a clear purpose, using consistent colors and spacing, and keeping the most common action at the top of the dashboard. Immediate warnings and toast messages help users recover from invalid input, while the goal summary, graph, and scrollable history present the same information at different levels of detail. These designs were successful because users can complete the primary workflow in only a few steps and can see the result of each action immediately.
+1. Hash credentials with an appropriate password-storage design rather than storing or comparing plaintext.
+2. Add a validated phone-number workflow or remove the incomplete SMS path.
+3. Replace destructive `onUpgrade` behavior with versioned, data-preserving migrations.
+4. Add unit, database, migration, and Espresso tests around the core workflows.
+5. Improve input validation, accessibility, responsive layouts, and error reporting.
+6. Consider Room, ViewModel, and Navigation components if the prototype is expanded.
 
-### Coding Approach
+## Competencies demonstrated
 
-I began by identifying the required screens, data tables, and movement of information between them. I then implemented the app incrementally, connecting one complete feature at a time and separating layout, interaction, display, and persistence responsibilities across the XML views, controller, model, and database helper. Working in small, testable steps made it easier to isolate defects and avoid changing multiple parts of the app at once. I can apply the same strategy to future projects by planning the interface and data flow before coding, creating a working vertical slice early, and extending it through focused iterations.
+- Java Android event handling and multi-screen navigation
+- SQLite schema design and CRUD integration
+- Coordinating persisted data with dynamic history and graph views
+- Runtime permission flow and feature preference storage
+- Translating mobile requirements into a usable vertical slice
+- Reviewing a prototype honestly for security, migration, and test gaps
 
-### Functional Testing
+<details>
+<summary>Development reflection</summary>
 
-I tested the app repeatedly in the Android emulator as features were added, including successful and unsuccessful authentication, account creation, data persistence, adding and updating today's weight, deleting a history entry, refreshing the graph and goal message, and granting or denying SMS permission. This process is important because code can compile while the complete user workflow still fails. Testing revealed integration issues involving screen state, input validation, permission timing, date ordering, and keeping multiple UI components synchronized with the database.
+I developed the application incrementally, first identifying the screens, tables, and data flow and then connecting one complete feature at a time. That approach made it easier to isolate defects at the boundaries among the interface, controller logic, and database.
 
-### Innovation and Problem Solving
+The strongest portion is the integration between SQLite and the tracking dashboard. A change to today's weight updates the persisted record, goal calculation, history rows, and graph. Converting stored dates into ordered graph points also allowed one data set to support newest-first history and chronological visualization.
 
-One challenge was keeping the weight-history rows, goal message, input field, and graph synchronized after every insert, update, or deletion. I overcame this by generating the history rows from database results, attaching an action to each row, and refreshing every dependent view after a change. I also converted the stored date strings into sortable graph points so entries could be displayed chronologically even though the history list shows the newest record first. This allowed the same underlying data to support two different user-centered presentations.
+The project reinforced that a compiling app is not the same as a production-ready one. Automated tests, secure credential handling, reliable migrations, validated notification data, accessibility, and failure handling all need explicit engineering work beyond the initial functional workflow.
 
-### Strongest Component
+</details>
 
-I was particularly successful in integrating the SQLite data layer with the tracking dashboard. The database uses related tables and focused CRUD methods to keep each user's account, goal, preference, and dated weigh-ins organized. Connecting those results to dynamically created history rows, same-day update behavior, goal calculations, and a line graph demonstrated my skills with Java, SQL, Android event handling, data persistence, and coordinating application state across multiple UI elements.
+## Academic context
 
-## Academic Context
-
-Developed by Michael Foster as a portfolio artifact for **CS 360: Mobile Architecture and Programming** at Southern New Hampshire University.
+Created by Michael Foster for CS 360: Mobile Architecture and Programming at Southern New Hampshire University. Use fictional account and health data when evaluating this academic prototype.
